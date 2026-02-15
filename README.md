@@ -1,1 +1,1 @@
-# Understanding-Gift-Card-Purchasing-Dynamic-on-Amazon
+# Understanding Gift Card Purchasing Dynamic on Amazon
