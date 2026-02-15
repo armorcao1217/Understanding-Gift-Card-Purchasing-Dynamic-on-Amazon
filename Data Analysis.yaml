@@ -1,0 +1,862 @@
+schemaVersion: 3
+meta:
+  sourceVersionId: 019c5ec7-1dfc-700d-afa6-0e9596af7c1d # DO NOT CHANGE - Hex uses this to match up project versions when reimporting the file
+  description: null
+  projectId: 019ad639-acd2-7115-a8e0-05a48c3f9781 # DO NOT CHANGE - Unique ID of the project from which this file was generated
+  title: "Behind the Click: Understanding Gift Card Purchasing Dynamics on Amazon"
+  timezone: null
+  appTheme: SYS_PREF
+  codeLanguage: R
+  status: null
+  categories: []
+  castDecimalsDefault: true
+  hexType: PROJECT
+  allowExecutionReordering: true
+  prerunApp: false
+  autoRerunApp: true
+  cachePublishedAppState: true
+  logicQueryCacheTimeout: null
+  publishedQueryCacheTimeout: null
+  refreshStalePublishedApp: true
+projectAssets:
+  dataConnections: []
+  envVars: []
+  secrets: []
+sharedAssets:
+  secrets: []
+  vcsPackages: []
+  dataConnections:
+    - dataConnectionId: cb8f88a3-dcf6-4adf-afd0-4fa892e4f548 # [Demo] Hex Public Data (snowflake)
+  externalFileIntegrations: []
+cells:
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-223070fdf0fb # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Introduction
+    config:
+      source: |-
+        # Introduction
+        ### Group Members
+        - Armor Cao
+        - Becky Song
+        - Liujun Chen
+
+        ### Research Question
+        The broad topic that drives our group's attention is consumers' purchasing behaviors and patterns on e-commerce platforms. Therefore, we chose Amazon data as it provides rich information about product categories, product timing, and consumer demographics, and we would like to dive deeper into the specific consumer data. 
+
+        After the initial exploration of the data, we found one product we are particularly interested in, which is the category of gift cards. Focusing on gift card categories, there are four questions we are targeting for:
+        1. When do consumers most frequently purchase gift cards, and is there a discernible time trend?
+        2. What are the regional patterns associated with gift card purchases?
+        3. Do customers typically purchase gift cards together with other product categories, or do they usually buy them on their own? 
+        4. How often, how recently, and how much do consumers spend when purchasing gift cards? 
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-2b5a5aff739f # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Data Preparation
+    config:
+      source: |
+        # Data Preparation
+        ### Datasets
+        This project analyzes e-commerce consumer behavior using data from the "Open e-commerce 1.0" dataset (Berke et al., 2023), sourced from the Harvard Dataverse. The dataset contains respondent' demographic information and Amazon spending behavior. Each observation represents an individual survey respondent with associated spending data. 
+
+        We will be using two datasets from the original study: the `amazon-purchase.csv` and the `survey.csv`. The transactional purchase dataset includes details of Survey ResponseID, order date, shipping state, unit price, quantity, product code, title, and category. The survey dataset provides corresponding demographic and spending habit information, also with the Survey ResponseID column. 
+
+        Data Citation: Alex Berke; Dan Calacci; Robert Mahari; Takahiro Yabe; Kent Larson; Sandy Pentland, 2023, "Open e-commerce 1.0: Five years of crowdsourced U.S. Amazon purchase histories with user demographics", Harvard Dataverse, V1, https://doi.org/10.7910/DVN/YGLYDY UNF:6:mV4isMgPXhqWeiQ3gZmmNQ==
+
+
+        ### Data Manipulation
+        The two datasets were joined to create a unified analytical dataset for our project, using the Survey ResponseID as the primary key. This merge combines individual purchase records with the respondent's demographic profile, allowing for a complete look at purchasing behavior. 
+
+        Data filtering was done to focus on spending behaviors associated with gift cards. It was done through Category filtering, ensuring only records related to the purchases of **gift cards** and associated products are retained. 
+
+        Moreover, the **total price per order** was calculated by multiplying the purchase price per unit by the quantity. 
+
+        The entire cleaning process was implemented in Python. Please refer to the attached `Data_PreCleaning.ipynb` document for a detailed description of the manipulation process. 
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-3103f6f844cb # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |
+        # Data Analysis
+  - cellType: SQL
+    cellId: 019ad639-ad21-7115-a8e4-b6981a7bb9a5 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Giftcard purchases
+    config:
+      source: select * from "giftcard_purchases_data.csv";
+      dataFrameCell: true
+      dataConnectionId: null
+      resultVariableName: df
+      useRichDisplay: false
+      enablePreview: true
+      sqlCellOutputType: PANDAS
+      useQueryMode: false
+      castDecimals: true
+      useNativeDates: true
+      outputFilteredResult: true
+      allowDuplicateColumns: false
+      tableDisplayConfig: null
+  - cellType: CODE
+    cellId: 019ad639-ad1e-7115-a8e4-4f578af55dee # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Data Summary
+    config:
+      source: summary(df)
+  - cellType: CODE
+    cellId: 019ad75b-2b86-7665-8f5e-ef478f80fd37 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Load Required Libraries
+    config:
+      source: |-
+        # Basic packages
+        library(dplyr)
+        library(ggplot2)
+
+        # For time series analysis
+        library(lubridate)
+
+        # For map
+        install.packages("maps")
+        library(maps)
+
+        # For combo analysis data cleaning
+        library(stringr)
+        library(scales)
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-48d48a5029d3 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "### General Pattern"
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-3867a569d1f5 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Justify Quantity Outlier Removal
+    config:
+      source: |
+        Following the analysis by **Berke et al. (2024)**, which identified the top 1% of gift card purchasers as extreme outliers, further inspection of the present dataset revealed a single order containing 64 gift cards, substantially exceeding typical purchasing behavior. To ensure data integrity and prevent skewness in subsequent analyses, transactions exceeding the 99th percentile of purchase quantity were excluded. 
+  - cellType: CODE
+    cellId: 019ad639-ad1e-7115-a8e4-5561dd9688bf # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Remove Quantity Outliers
+    config:
+      source: filt_quant <- dplyr::filter(df, Quantity <= stats::quantile(df$Quantity, 0.99, na.rm = TRUE))
+  - cellType: MARKDOWN
+    cellId: 019ad674-7b9a-777d-b9e1-c503a0a665e0 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### Time Series Analysis"
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-506f23643d7c # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "The most recent transaction in the dataset is dated March 20, 2023, indicating that the 2023 data is **incomplete for any standardized temporal analysis** (e.g., by year, quarter, or month). To maintain a consistent and unbiased time series visualizations, all 2023 records were excluded, limiting the analysis to the complete calendar years from 2018 to 2022. "
+  - cellType: CODE
+    cellId: 019ad639-ad1e-7115-a8e4-67881bef803a # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Filter Orders by Date
+    config:
+      source: df_time <- dplyr::filter(filt_quant, as.Date(`Order Date`) < as.Date("2023-01-01"))
+  - cellType: CODE
+    cellId: 019ad639-ad1e-7115-a8e4-6916f489055b # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Quarterly Gift Card Trends
+    config:
+      source: |-
+        df_time %>%
+          mutate(
+            Quarter = quarter(`Order Date`),
+            Year = year(`Order Date`),
+            YearQuarter = paste0(Year, "-Q", Quarter),
+            IsQ4 = Quarter == 4 
+          ) %>%
+          group_by(Year, Quarter, YearQuarter, IsQ4) %>%
+          summarise(TotalQuantity = sum(Quantity), .groups = "drop") -> time_summary
+
+        time_summary %>%
+          ggplot(aes(x = YearQuarter, y = TotalQuantity, group = 1)) +
+          geom_line(color = "#0583f2", linewidth = 1.2) +
+          # Solid points for non-Q4
+          geom_point(data = filter(time_summary, !IsQ4), 
+                     color = "#0583f2", size = 3) +
+          # Hollow points for Q4
+          geom_point(data = filter(time_summary, IsQ4), 
+                     color = "#0583f2", fill = "white", shape = 21, size = 5, stroke = 1.5) +
+          geom_vline(xintercept = "2020-Q1", color = "#F2C49B", linetype = "solid", linewidth = 1) +
+          geom_vline(xintercept = seq(4.5, length(unique(time_summary$YearQuarter)) - 0.5, by = 4), 
+                     color = "gray70", linetype = "dashed") +
+          annotate("text", x = "2020-Q1", y = max(time_summary$TotalQuantity) * 0.9, 
+                   label = "COVID-19", color = "#F25C05", size = 3.5, fontface = "bold", vjust = -0.5) +
+          labs(
+            title = "Gift Card Trends from 2018 to 2022",
+            subtitle = "Strong Q4 Spikes and a Post-COVID Structural Rise",
+            x = "Quarter",
+            y = "Total Quantity Sold"
+          ) +
+          theme_minimal(base_size = 13) +
+          theme(
+            plot.title = element_text(hjust = 0, face = "bold"), 
+            plot.subtitle = element_text(hjust = 0),
+            axis.text.x = element_text(angle = 30, hjust = 1),
+            legend.position = "none",
+            panel.grid.minor = element_blank() 
+          ) +
+          scale_y_continuous(labels = scales::comma)
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-5cfd8c3e3be4 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Quarter Trend Findings
+    config:
+      source: "The graph shows a clear seasonal and upward trend in Amazon gift card purchases from 2018 to 2022, with notable spikes in Q4 each year (consistent with holiday-driven demand) and smaller increases in Q2 or Q3 depending on the year. After the onset of COVID-19 in 2020 Q1, marked by the orange line, sales rose sharply, suggesting a shift toward digital or contactless gifting during the early pandemic period. Although quarterly fluctuations persist, the overall trajectory trends upward through 2021, peaking in 2021 Q4, before stabilizing at a slightly lower but elevated level in 2022. These patterns indicate that consumers most frequently buy gift cards during year-end holidays, with pandemic-induced behavioural changes contributing to a structural rise in demand over time. "
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-6214927b6751 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### Regional Patterns"
+  - cellType: CODE
+    cellId: 019ad6cb-72ed-7665-8f2e-64859b14cbbc # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: US States Quantity Choropleth
+    config:
+      source: |-
+        # Prepare the data - ensure one value per state
+        plot_data <- filt_quant %>%
+          group_by(`Q-demos-state`) %>%
+          summarise(Total_Qty = sum(Quantity, na.rm = TRUE)) %>%
+          mutate(abbr = state.abb[match(`Q-demos-state`, state.name)]) %>%
+          # Remove any duplicates or NA states
+          filter(!is.na(abbr)) %>%
+          group_by(abbr) %>%
+          summarise(Total_Qty = sum(Total_Qty, na.rm = TRUE))
+
+        # Get US states map data
+        us_states <- map_data("state")
+
+        # Convert state names to match our data
+        us_states <- us_states %>%
+          mutate(abbr = state.abb[match(region, tolower(state.name))])
+
+        # Merge with our data - now with one row per state
+        us_states <- us_states %>%
+          left_join(plot_data, by = "abbr", relationship = "many-to-one")
+
+        # Create labels data for specific states with abbreviations
+        state_labels <- data.frame(
+          abbr = c("CA", "NY", "TX"),
+          label = c("CA", "NY", "TX"),
+          lat_adjust = c(1, 2, 1),
+          long_adjust = c(1, -0.5, -0.5) 
+        ) %>%
+          left_join(
+            us_states %>%
+              group_by(abbr) %>%
+              summarise(long = mean(long), lat = mean(lat)),
+            by = "abbr"
+          ) %>%
+          mutate(lat = lat + lat_adjust) %>%
+          select(-lat_adjust)
+
+        # Create the choropleth map with labels
+        ggplot(us_states, aes(x = long, y = lat, group = group)) +
+          geom_polygon(aes(fill = Total_Qty), color = "white", linewidth = 0.5) + 
+          scale_fill_gradient(
+            low = "#E6F2FF",
+            high = "#0583F2",
+            na.value = "grey90",
+            name = "Quantity"
+          ) +
+          # Add state labels with abbreviations and values
+          geom_text(data = state_labels, 
+                    aes(x = long, y = lat, label = label),
+                    inherit.aes = FALSE,
+                    size = 3, 
+                    fontface = "bold",
+                    color = "white",
+                    lineheight = 0.8) +
+          coord_fixed(1.3) +
+          labs(
+            title = "Gift Card Purchasing Patterns Across U.S. States",
+            subtitle = "Higher volumes concentrate in large, urban, and high-income states",
+            x = "",
+            y = ""
+          ) +
+          theme_minimal(base_size = 13) +
+          theme(
+            plot.title = element_text(hjust = 0, face = "bold"),
+            plot.subtitle = element_text(hjust = 0),
+            legend.position = "right",
+            axis.text = element_blank(),
+            axis.ticks = element_blank(),
+            panel.grid = element_blank()
+          )
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-6f5b04beefc1 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: State Distribution Analysis
+    config:
+      source: "This map highlights clear geographic concentration in gift card purchases, with the highest volumes in large, populous, and economically strong states such as California (4,254), New York (3,253), Texas (2,723). The pattern suggests that gift card demand aligns closely with population size, urbanization, and higher disposable income-areas with major metropolitan hubs tend to exhibit stronger digital and retail engagement. States with lower populations or more rural profiles show lighter purchase volumes, indicating fewer transactions and potentially differing consumer preferences or digital adoption levels. Overall, the distribution points toward demographic factors such as population density, income levels, and urban digital retail participation as key drivers of gift card purchasing behavior. "
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-83bd132963de # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Combo Analysis Introduction
+    config:
+      source: |-
+        ### Combo Analysis
+
+        In this section, we examine whether customers tend to purchase gift cards alone or together with related products. This relates to the economic concept of bundling - a strategy in which companies sell two or more products as a package to increase convenience, perceived value, or total purchase size. 
+
+        While reviewing Amazon's gift card pages, we found that gift envelopes and gift wraps are frequently recommended or paired with gift cards as part of the “Frequently Bought Together” or “Customers Also Bought” sections. This suggests that Amazon may be encouraging customers to bundle these items(without providing bundling offers and discounts). 
+
+        To evaluate whether customers actually follow this behavior, we conducted a combo analysis focusing on gift cards + gift envelopes/wraps. 
+
+        Because our dataset spans multiple years and customers may complete transactions separately, identifying items bought in the same cart is not reliable. To overcome this limitation, we analyze behavior at the year level. If a customer purchased a gift card and a gift envelope or wrap at any point within the same year, we classify this as a combo purchase. 
+  - cellType: CODE
+    cellId: 019ad639-ad1e-7115-a8e4-8173a89cdfe7 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Create combo category, group by year, and calculate the proportion
+    config:
+      source: |+
+        year(Sys.Date())   
+
+        df_combo <- df_time %>%
+          mutate(
+            cat_up   = toupper(Category),
+            title_up = toupper(ifelse(is.na(Title), "", Title)),
+            is_gift  = str_detect(cat_up, "^GIFT_CARD$|^ABIS_GIFT_CARD$|^ELECTRONIC_GIFT_CARD$"),
+            is_env   = str_detect(cat_up, "^ENVELOPE$|^GIFT_WRAP$") |
+                       str_detect(title_up, "ENVELOPE|GIFT WRAP"),
+            Year     = year(as.Date(`Order Date`))
+          )
+
+        person_year <- df_combo %>%
+          group_by(`Survey ResponseID`, Year) %>%
+          summarise(
+            has_gift = any(is_gift),
+            has_env  = any(is_env),
+            .groups = "drop"
+          ) %>%
+          mutate(group = case_when(
+            has_gift & has_env ~ "Both",
+            has_gift & !has_env ~ "Gift Card",
+            !has_gift & has_env ~ "Envelope",
+            TRUE ~ "Neither"
+          )) %>%
+          filter(group != "Neither") 
+
+
+        counts <- person_year %>%
+          count(Year, group) %>%
+          group_by(Year) %>%
+          mutate(prop = prop.table(n)) %>%
+          ungroup()
+
+  - cellType: CODE
+    cellId: 019ad639-ad1e-7115-a8e4-8b35a14433fe # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Giftcard Como Purchase Pattern
+    config:
+      source: |
+        ggplot(counts, aes(
+          y = factor(Year),
+          x = prop,
+          fill = group
+        )) +
+          geom_col(color = "white", linewidth = 0.8) +
+          geom_text(
+            aes(label = percent(prop, accuracy = 1)),
+            position = position_stack(vjust = 0.5),
+            size = 3.5
+          ) +
+          scale_x_continuous(labels = percent_format(accuracy = 1)) +
+          scale_fill_manual(
+            values = c(
+              "Gift Card" = "#F28F59",
+              "Both"      = "#7ec6f2",
+              "Envelope"  = "#F2D2B6"
+            ),
+            name = NULL
+          ) +
+          labs(
+            title    = "Gift Card Purchase Pattern",
+            subtitle = "Most customers (~70%) buy gift cards without any envelope add-on",
+            x        = "% of people",
+            y        = "Year"
+          ) +
+          theme_minimal(base_size = 13) +
+          theme(
+            plot.title      = element_text(hjust = 0, face = "bold"),
+            plot.subtitle   = element_text(hjust = 0),
+            legend.position = "right"
+          )
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-8cc267f0a760 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Combo Analysis
+    config:
+      source: |-
+        Our combo analysis shows that the majority of customers (roughly 70% across all years) prefer to purchase gift cards alone without selecting an envelope add-on. While there is some year-to-year fluctuation (a higher share in 2018-2019, a slight dip in 2020-2021, and a rebound to 73% in 2023), the changes are relatively small, all within a 10-percentage-point range.
+
+        Because these variations are minor and the “gift card only” option consistently dominates, we can conclude that customers prefer to buy gift cards on their own, rather than as part of a bundle.
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-95e5a839c73b # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        ### Retention Analysis
+        While the Combo Analysis helps us understand customers' co-purchasing trends, we tend to shift our analysis to the individual level to understand customers' repetitive purchasing behaviors and patterns. To deepen our understanding, we introduced the RFM model (Recency, Frequency, and Monetary Value). The RFM model is a marketing technique used to segment consumers based on their purchasing behavior and to measure how actively and consistently customers return to purchase products. There are three evaluation metrics in the model:
+
+        1. Recency (how recent a customer's last purchase was)
+        2. Frequency (how often the customer make purchases)
+        3. Monetary (How much the customer spends within a given periods)
+
+        By examining these three metrics, we can gain insight into a customer's purchasing behavior, including their most recent orders and total spend on the platform. This can help indicate customer segmentation on the platform and provide insights into consumer loyalty and spending patterns within the gift card category.
+
+        The dataset included 4,507 anomalous transactions where the purchase price per unit was less than $1. In Retention Analysis, we filtered out orders with purchase price per unit < 1 and used the 'filt_price' dataset for analysis. The rationale for this decision is that micro-value gift card orders (e.g., $0.10, $0.25, $0.50) are non-purchase events that inflate frequency, distort retention analysis, and do not represent meaningful customer behavior. Those tiny repeated orders are not purchases of gift cards but balance adjustments (people test out whether a payment works) or auto-reload triggers. Therefore, including them in the analysis does not reflect the analysis we want to retrieve and could artificially inflate order frequency and falsely suggest higher repeat-purchase rates. 
+  - cellType: CODE
+    cellId: 019ad639-ad1e-7115-a8e4-59d0743010c5 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: "Summary: Low Purchase Price"
+    config:
+      source: |-
+        summary(
+          dplyr::select(
+            dplyr::filter(df, `Purchase Price Per Unit` < 1),
+            c(`Survey ResponseID`, where(is.numeric))
+          )
+        )
+  - cellType: CODE
+    cellId: 019ad639-ad1e-7115-a8e4-926660aa1698 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Remove Low Price Outliers
+    config:
+      source: |-
+        filt_price <- df %>%
+          filter(`Purchase Price Per Unit` > 1)
+  - cellType: CODE
+    cellId: 019ad639-ad1e-7115-a8e4-9a1d274b4750 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: RFM Analysis Calculation
+    config:
+      source: |-
+        filt_price$`Order Date` <- as.Date(filt_price$`Order Date`)
+
+        start_2022 <- as.Date("2022-01-01")
+        end_2022   <- as.Date("2022-12-31")
+
+        df_2022 <- filt_price %>%
+          filter(`Order Date` >= start_2022 & `Order Date` <= end_2022)
+        latest_date_2022 <- max(df_2022$`Order Date`, na.rm = TRUE)
+
+        rfm_2022 <- df_2022 %>%
+          group_by(`Survey ResponseID`) %>%
+          summarise(
+            Recency   = as.numeric(end_2022 - max(`Order Date`, na.rm = TRUE)),  
+            Frequency = n_distinct(`Order Date`),                                
+            Monetary  = sum(`Total Price`, na.rm = TRUE)                         
+          ) %>%
+          mutate(
+            R_score = ntile(-Recency, 5),
+            F_score = ntile(Frequency, 5),
+            M_score = ntile(Monetary, 5)
+          )
+
+        head(rfm_2022)
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-a62aa9abda3d # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: RFM Caculation Rationale
+    config:
+      source: "For RMF caculation, it should be analyzed within one complete year, so we chose the most recent year, 2022, for evaluation. For each user, we first compute raw Recency (days since last purchase in 2022), Frequency (number of repeated purchase days in 2022), and Monetary (total 2022 spending). Then we convert each metric into a 1-5 score using quintiles: customers in the top 20% for recency (most recent), frequency, or monetary value receive a score of 5, while those in the bottom 20% receive a score of 1."
+  - cellType: CODE
+    cellId: 019ad6b6-e3b7-7ff3-9fa1-03563507f954 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: RFM Heatmap Visualization
+    config:
+      source: |-
+        fm_heatmap <- rfm_2022 %>%
+          group_by(R_score, F_score) %>%
+          summarise(Avg_Monetary = mean(Monetary, na.rm = TRUE))
+
+        ggplot(fm_heatmap, aes(x = F_score, y = R_score, fill = Avg_Monetary)) +
+          geom_tile(color = "white", linewidth = 0.8) +
+          scale_fill_gradient(
+            low  = "#E6F2FF",
+            high = "#0583F2"
+          ) +
+          annotate(
+            "segment",
+            x = 4.2, y = 3.3,
+            xend = 5, yend = 4,
+            colour = "black",
+            arrow = arrow(length = unit(0.25, "cm")),
+            linewidth = 1
+          ) +
+          labs(
+            title    = "Customer Segments based on RFM scores",
+            subtitle = "Higher spending is concentrated among\nhigh-frequency and recent buyers",
+            x        = "Frequency Score",
+            y        = "Recency Score",
+            fill     = "Average Spend"
+          ) +
+          theme_minimal(base_size = 13) +
+          theme(
+            plot.title    = element_text(hjust = 0, face = "bold"),   
+            plot.subtitle = element_text(hjust = 0),                   
+            legend.position = "right"
+          )
+  - cellType: CODE
+    cellId: 019ad682-6957-7ff3-9f71-5e07c256c2cc # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: Average Frequency Distribution
+    config:
+      source: |-
+        avg_freq_by_quantile <- rfm_2022 %>%
+          group_by(F_score) %>%
+          summarise(
+            avg_frequency = mean(Frequency, na.rm = TRUE),
+            n = n(),
+            .groups = "drop"
+          ) %>%
+          arrange(F_score)
+
+        avg_freq_by_quantile
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-b70db6334fd2 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: RFM Interpretation
+    config:
+      source: In this heatmap, the Frequency = 5 column consistently appears darker than all other frequency levels because customers in this group make dramatically more purchases, with an average frequency of 11 in 2022, which is much higher than any other group with frequency scores of 1-4. This exceptionally high purchase volume naturally leads to much higher total spending, which shows up as darker shading regardless of their recency score. Moreover, in this chart, the single darkest cell occurs at Recency = 4 and Frequency = 5, representing that customers who buy both very frequently and relatively recently have the highest total spending. This combination of high engagement and recent activity identifies the highest-value segment in the dataset, explaining why this segment has the strongest intensity on the heatmap.
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-b9b3cb0b24e5 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Conclusion 
+
+        This project examines gift card purchasing behavior on Amazon with a focus on seasonal trends, regional variation, cross-category patterns, and individual purchasing characteristics such as frequency, spending, and recency.
+
+        We find strong seasonality: gift card sales consistently peak in Q4, reflecting the holiday gifting period. A notable surge appears in 2019-2021, coinciding with the COVID-19 pandemic, when increased online shopping and digital gifting became more common.
+
+        Regionally, purchases are concentrated in large and economically strong states—California, New York, and Texas. This distribution aligns closely with population size, urbanization, and higher disposable income, indicating that areas with major metropolitan hubs exhibit greater digital purchasing engagement. Lower-density or more rural states show lighter activity, suggesting fewer transactions or different adoption patterns.
+
+        Across categories, customers love to purchase gift cards alone, without pairing them with envelopes or gift wraps. This preference suggests that buyers typically favor the simple, unbundled option, which may be a more convenient option or because many gift cards may not be purchased for traditional gifting occasions.
+
+        At the individual level, higher spending is concentrated among frequent and recent buyers. Customers with more than three purchase records and those who made a purchase within the last fourty days contribute most to total gift card spending. This highlights an opportunity for targeted retention strategies, such as timely reminders or personalized messaging that encourages repeat purchases among these high-value segments.
+
+        Overall, our analysis uncovers clear patterns in seasonal demand, geographical concentration, and customer purchasing behavior. These insights can help inform sales strategies, including regional targeting, Q4 campaign planning, and personalized outreach for high-value customers.
+
+        Several limitations remain. First, we assume that gift cards are primarily purchased for gifting, but many customers also reload cards for personal use, which could reduce the prevalence of bundle purchases. Distinguishing reloads from new gift cards would clarify underlying motivations. Second, our year-level view of combo purchases does not capture whether items were bought for the same occasion. More granular transaction-level or intent-level data would improve our ability to analyze true gifting behavior.
+  - cellType: MARKDOWN
+    cellId: 019ad639-ad16-7115-a8e3-c42ae52e3d34 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Individual Contributions
+        Briefly document each group member's team role(s) and specific contributions
+        Each member is responsible for a specific part of visualization and also have different role in contributing the workbook
+        - Armor Cao: Story and slides lead (Primary), Coding lead (Secondary)
+        - Becky Song: Chart design lead, Coding lead (Primary)
+        - Liujun Chen: Presenter, Story and slides lead (Secondary)
+appLayout:
+  visibleMetadataFields:
+    - NAME
+    - DESCRIPTION
+    - AUTHOR
+    - LAST_EDITED
+    - LAST_RUN
+    - CATEGORIES
+    - STATUS
+    - TABLE_OF_CONTENTS
+  fullWidth: false
+  tabs:
+    - name: Tab 1
+      rows:
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-223070fdf0fb
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-2b5a5aff739f
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-3103f6f844cb
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad1e-7115-a8e4-4f578af55dee
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-48d48a5029d3
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-3867a569d1f5
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad674-7b9a-777d-b9e1-c503a0a665e0
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-506f23643d7c
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad1e-7115-a8e4-6916f489055b
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-5cfd8c3e3be4
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-6214927b6751
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad6cb-72ed-7665-8f2e-64859b14cbbc
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-6f5b04beefc1
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-83bd132963de
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad1e-7115-a8e4-8173a89cdfe7
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad1e-7115-a8e4-8b35a14433fe
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-8cc267f0a760
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-95e5a839c73b
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad1e-7115-a8e4-59d0743010c5
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad1e-7115-a8e4-9a1d274b4750
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-a62aa9abda3d
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad6b6-e3b7-7ff3-9fa1-03563507f954
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad682-6957-7ff3-9f71-5e07c256c2cc
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-b70db6334fd2
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-b9b3cb0b24e5
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+        - columns:
+            - start: 0
+              end: 120
+              elements:
+                - showSource: false
+                  hideOutput: false
+                  type: CELL
+                  cellId: 019ad639-ad16-7115-a8e3-c42ae52e3d34
+                  sharedFilterId: null
+                  height: null
+                  showLabel: true
+                  explorable: null
+sharedFilters: []
