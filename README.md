@@ -30,7 +30,7 @@ Data Citation: Alex Berke; Dan Calacci; Robert Mahari; Takahiro Yabe; Kent Larso
 <br>
 
 ## Data Cleaning
-Before analysis, we applied two data-cleaning steps to improve accuracy.
+Before analysis, we applied two data-cleaning steps to improve accuracy:
 
 First, we removed extreme outliers by excluding transactions above the 99th percentile of gift card quantity (e.g., unusually large bulk orders).
 
@@ -61,37 +61,13 @@ In this heatmap, the Frequency = 5 column consistently appears darker than all o
 
 <img width="400" height="400" alt="Screenshot 2026-02-15 at 4 20 00 PM" src="https://github.com/user-attachments/assets/fa2f7d87-13c4-4eff-a502-172babe6a9fc" />
 
-
-
 <br>
 
 ## Business Strategy
-### 1️⃣ Go Beyond Star Ratings
-Our analysis shows that ratings alone hide important user frustrations. Even high-rating reviews contain negative feedback about features like **ads, reliability, and usability**.  
+Exploit strong Q4 seasonality with precision targeting: Concentrate acquisition, reactivation, and promotional spend in Q4, using Q3 warm-up campaigns and holiday-specific messaging to maximize conversion during peak gifting demand.
 
-👉 **Strategy:** Combine sentiment and topic insights to surface recurring pain points, then prioritize targeted product fixes, clearer FAQs, and improved support workflows to reduce churn.
+Prioritize high-value customers using RFM segmentation: Focus retention efforts on high-frequency, high-recency customers (R≥4, F=5) through loyalty perks, personalized offers, and early access, as this segment drives the highest total spend.
 
-### 2️⃣ Focus on Mid-Range Reviews for Growth
-Mid-range (e.g., **3-star**) reviews contain the most actionable insights, often combining praise with clear improvement suggestions.  
+Optimize upsell strategy by respecting customer preferences: Keep “gift card only” as the default purchase flow, and selectively promote envelope add-ons during high-intent moments (e.g., holidays, first-time buyers) to increase attachment without harming conversion.
 
-👉 **Strategy:** Treat these reviews as early signals for UI issues and bugs. Prioritize fixes that convert moderately satisfied users into loyal advocates.
-
-<br>
-
-## Project Structure  
-```
-├── data
-│   ├── SPOTIFY_REVIEWS_tokens.csv
-│   └── SPOTIFY_REVIEWS.csv
-├── notebooks
-│   ├── 0 - Data Preparation.ipynb
-│   ├── 1 - Sentiment Analysis.ipynb
-│   ├── 2- Token Comparison.ipynb
-│   ├── 2.1 - Topic Modeling_good_bad.ipynb
-│   ├── 2.2 - Topic Modeling_mid.ipynb
-│   └── 3 - Classification.ipynb
-├── Final Report
-│   ├── Final Presentation.pdf
-│   └── Final Report.pdf
-├── README.md
-```
+Allocate marketing resources geographically for higher ROI: Direct spend toward large, urban, high-income states where demand and digital engagement are strongest, while using lower-cost channels in lower-volume regions.
