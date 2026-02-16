@@ -48,7 +48,7 @@ The graph shows a strong seasonal pattern and an overall upward trend in Amazon 
 ### Regional Patterns
 This map shows a clear geographic concentration of gift card purchases, with the highest volumes in large, economically strong states such as California (4,254), New York (3,253), and Texas (2,723). Demand closely tracks population size, urbanization, and disposable income, with major metropolitan areas exhibiting stronger digital and retail engagement. Lower-population and more rural states show lighter volumes, suggesting fewer transactions and different consumer or digital adoption patterns. Overall, population density, income, and urban retail participation appear to be key drivers of gift card purchasing behavior.
 
-<img width="600" height="450" alt="Screenshot 2026-02-15 at 4 17 55 PM" src="https://github.com/user-attachments/assets/133c5bee-c48c-430f-925b-c8c5bf217833" />
+<img width="800" height="450" alt="Screenshot 2026-02-15 at 4 17 55 PM" src="https://github.com/user-attachments/assets/133c5bee-c48c-430f-925b-c8c5bf217833" />
 
 
 ### Combo Analysis
